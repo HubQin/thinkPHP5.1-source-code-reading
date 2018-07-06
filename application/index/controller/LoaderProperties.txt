@@ -1,0 +1,99 @@
+<!-- 
+echo "<pre>";
+$a = new \ReflectionClass('think\Loader');
+print_r($a->getStaticProperties());
+echo "</pre>";
+ -->
+
+
+Array
+(
+    [classMap] => Array
+        (
+            [Psr\Log\LoggerInterface] => 
+        )
+
+    [classAlias] => Array
+        (
+            [App] => think\facade\App
+            [Build] => think\facade\Build
+            [Cache] => think\facade\Cache
+            [Config] => think\facade\Config
+            [Cookie] => think\facade\Cookie
+            [Db] => think\Db
+            [Debug] => think\facade\Debug
+            [Env] => think\facade\Env
+            [Facade] => think\Facade
+            [Hook] => think\facade\Hook
+            [Lang] => think\facade\Lang
+            [Log] => think\facade\Log
+            [Request] => think\facade\Request
+            [Response] => think\facade\Response
+            [Route] => think\facade\Route
+            [Session] => think\facade\Session
+            [Url] => think\facade\Url
+            [Validate] => think\facade\Validate
+            [View] => think\facade\View
+        )
+
+    [prefixLengthsPsr4] => Array
+        (
+            [t] => Array
+                (
+                    [think\composer\] => 15
+                    [think\] => 6
+                    [traits\] => 7
+                )
+
+            [a] => Array
+                (
+                    [app\] => 4
+                )
+
+        )
+
+    [prefixDirsPsr4] => Array
+        (
+            [think\composer\] => Array
+                (
+                    [0] => D:\dev\web\tp5.1\vendor\composer/../topthink/think-installer/src
+                )
+
+            [think\] => Array
+                (
+                    [0] => D:\dev\web\tp5.1\thinkphp\library\think
+                    [1] => D:\dev\web\tp5.1\vendor\composer/../topthink/think-image/src
+                )
+
+            [app\] => Array
+                (
+                    [0] => D:\dev\web\tp5.1\application
+                    [1] => D:\dev\web\tp5.1\vendor\composer/../../application
+                )
+
+            [traits\] => Array
+                (
+                    [0] => D:\dev\web\tp5.1\thinkphp\library\traits
+                )
+
+        )
+
+    [fallbackDirsPsr4] => Array
+        (
+            [0] => D:\dev\web\tp5.1\extend
+        )
+
+    [prefixesPsr0] => Array
+        (
+        )
+
+    [fallbackDirsPsr0] => Array
+        (
+        )
+
+    [files] => Array
+        (
+        )
+
+    [composerPath] => D:\dev\web\tp5.1\vendor\composer\
+)
