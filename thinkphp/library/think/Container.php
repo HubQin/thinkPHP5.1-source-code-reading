@@ -19,6 +19,8 @@ use ReflectionFunction;
 use ReflectionMethod;
 use think\exception\ClassNotFoundException;
 
+# 这里实现ArrayAccess接口，实现像访问数组一样访问对象的功能。(本文件最后四个函数即为实现该接口必须实现的函数)
+# http://php.net/manual/zh/class.arrayaccess.php
 class Container implements \ArrayAccess
 {
     /**
@@ -72,12 +74,15 @@ class Container implements \ArrayAccess
      * @access public
      * @return static
      */
+    # 这里使用后期静态绑定，static相当于self，但static所指向的类是运行时函数所在的类
+    # http://php.net/manual/zh/language.oop5.late-static-bindings.php
     public static function getInstance()
     {
         if (is_null(static::$instance)) {
             static::$instance = new static;
         }
 
+        # 返回当前类实例
         return static::$instance;
     }
 
@@ -101,7 +106,9 @@ class Container implements \ArrayAccess
      * @return object
      */
     public static function get($abstract, $vars = [], $newInstance = false)
-    {
+    {   
+        # #var_dump(static::getInstance())在exit前运行了两次？
+        # var_dump(static::getInstance());echo "===I am HERE===";exit;
         return static::getInstance()->make($abstract, $vars, $newInstance);
     }
 
@@ -227,6 +234,7 @@ class Container implements \ArrayAccess
      * @param  bool          $newInstance    是否每次创建新的实例
      * @return object
      */
+    # example: $abstract == 'app'
     public function make($abstract, $vars = [], $newInstance = false)
     {
         if (true === $vars) {
@@ -234,23 +242,27 @@ class Container implements \ArrayAccess
             $newInstance = true;
             $vars        = [];
         }
-
         $abstract = isset($this->name[$abstract]) ? $this->name[$abstract] : $abstract;
 
+        # 已存在实例且不创建新的实例，直接返回该实例
         if (isset($this->instances[$abstract]) && !$newInstance) {
             return $this->instances[$abstract];
         }
 
+        # A 实例已注册 $concrete = $this->bind['app'] = 'think\App'
         if (isset($this->bind[$abstract])) {
             $concrete = $this->bind[$abstract];
 
-            if ($concrete instanceof Closure) {
+            # 闭包
+            if ($concrete instanceof \Closure) {
                 $object = $this->invokeFunction($concrete, $vars);
             } else {
+                # 添加别名: name['app'] = 'think\App'
                 $this->name[$abstract] = $concrete;
+                # 递归执行make函数：(第二次时 isset($this->bind[$abstract]) === false 走B分支)
                 return $this->make($concrete, $vars, $newInstance);
             }
-        } else {
+        } else { # B 实例未注册
             $object = $this->invokeClass($abstract, $vars);
         }
 
@@ -483,21 +495,25 @@ class Container implements \ArrayAccess
         $this->delete($name);
     }
 
+    # 使用isset($foo['xx'])会调用到 
     public function offsetExists($key)
     {
         return $this->__isset($key);
     }
 
+    # 使用$foo['xx']时会调用到
     public function offsetGet($key)
     {
         return $this->__get($key);
     }
 
+    # 使用$foo['xx'] = 'abc'时会调用到
     public function offsetSet($key, $value)
     {
         $this->__set($key, $value);
     }
 
+     # 使用unset($foo['xx'])时会调用到 
     public function offsetUnset($key)
     {
         $this->__unset($key);
