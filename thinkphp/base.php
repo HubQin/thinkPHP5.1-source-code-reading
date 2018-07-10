@@ -126,8 +126,9 @@ if (interface_exists('Psr\Log\LoggerInterface')) {
     interface LoggerInterface
     {}
 }
-
+var_dump(facade\App::class);
 // 注册核心类的静态代理
+# App::class 获取带有命名空间的类名，这里App::class == 'think\App', facade\App::class == 'think\facade\App'
 Facade::bind([
     facade\App::class        => App::class,
     facade\Build::class      => Build::class,
@@ -150,6 +151,7 @@ Facade::bind([
 ]);
 
 // 注册类库别名
+# 对应关系: 'App' => facade\App::class => App::class
 Loader::addClassAlias([
     'App'      => facade\App::class,
     'Build'    => facade\Build::class,

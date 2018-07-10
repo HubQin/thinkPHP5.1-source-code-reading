@@ -65,7 +65,6 @@ class Loader
         } else {
             $scriptName = $_SERVER['SCRIPT_FILENAME'];
         }
-
         $path = realpath(dirname($scriptName));
 
         if (!is_file($path . DIRECTORY_SEPARATOR . 'think')) {
@@ -157,6 +156,7 @@ class Loader
         if ($file = self::findFile($class)) {
 
             // Win环境严格区分大小写
+            # realpath($file): 实际的文件名。 example: $file = 'app.php',实际文件名是'App.php',则realpath('app.php') == 'App.php'
             if (strpos(PHP_OS, 'WIN') !== false && pathinfo($file, PATHINFO_FILENAME) != pathinfo(realpath($file), PATHINFO_FILENAME)) {
                 return false;
             }
@@ -183,6 +183,7 @@ class Loader
 
         // 查找 PSR-4
         # example： "think\App.php"
+        # '\'替换为系统分隔符
         $logicalPathPsr4 = strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
 
         # $first = "t"
@@ -457,6 +458,7 @@ class Loader
      * @param  string $namespace    默认命名空间
      * @return mixed
      */
+    # 最终还是通过容器来实例化对应的类
     public static function factory($name, $namespace = '', ...$args)
     {
         $class = false !== strpos($name, '\\') ? $name : $namespace . ucwords($name);
