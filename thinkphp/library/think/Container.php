@@ -107,7 +107,7 @@ class Container implements \ArrayAccess
      */
     public static function get($abstract, $vars = [], $newInstance = false)
     {   
-        # #var_dump(static::getInstance())在exit前运行了两次？
+        # #var_dump(static::getInstance())在exit前运行了两次？==>(整个流程最后会调用一次Log类)
         # var_dump(static::getInstance());echo "===I am HERE===";exit;
         return static::getInstance()->make($abstract, $vars, $newInstance);
     }
@@ -237,11 +237,13 @@ class Container implements \ArrayAccess
     # example: $abstract == 'app'
     public function make($abstract, $vars = [], $newInstance = false)
     {
+        # 第二个参数是true时：
         if (true === $vars) {
             // 总是创建新的实例化对象
             $newInstance = true;
             $vars        = [];
         }
+        # 检查是否已有别名在name中,有则使用, 这时$abstract的值，如：'think\App'，将使程序跳到到下面的B分支执行
         $abstract = isset($this->name[$abstract]) ? $this->name[$abstract] : $abstract;
 
         # 已存在实例且不创建新的实例，直接返回该实例
@@ -249,7 +251,7 @@ class Container implements \ArrayAccess
             return $this->instances[$abstract];
         }
 
-        # A 实例已注册 $concrete = $this->bind['app'] = 'think\App'
+        # =====A===== 实例已注册 $concrete = $this->bind['app'] = 'think\App'
         if (isset($this->bind[$abstract])) {
             $concrete = $this->bind[$abstract];
 
@@ -257,12 +259,12 @@ class Container implements \ArrayAccess
             if ($concrete instanceof \Closure) {
                 $object = $this->invokeFunction($concrete, $vars);
             } else {
-                # 添加别名: name['app'] = 'think\App'
+                # 添加别名: name['app'] = 'think\App'（第一次执行make完成的任务）
                 $this->name[$abstract] = $concrete;
                 # 递归执行make函数：(第二次时 isset($this->bind[$abstract]) === false 走B分支)
                 return $this->make($concrete, $vars, $newInstance);
             }
-        } else { # B 实例未注册
+        } else { # =====B=====
             $object = $this->invokeClass($abstract, $vars);
         }
 
@@ -394,9 +396,10 @@ class Container implements \ArrayAccess
     public function invokeClass($class, $vars = [])
     {
         try {
+            # 提取类的信息，返回反射类实例对象
             $reflect = new ReflectionClass($class);
 
-            # 存在__make方法时
+            # 存在__make方法时(View,Cookie等类中)
             if ($reflect->hasMethod('__make')) {
 
                 # 提取该类下__make方法的信息
@@ -409,7 +412,7 @@ class Container implements \ArrayAccess
                 }
             }
 
-            # 获取传入类的构造函数，如：对于think\App,得到：object(ReflectionMethod){["name"]=> "__construct" ["class"]=>"think\App"}
+            # 获取传入类的构造函数，如：对于think\App,得到反射类对象：object(ReflectionMethod){["name"]=> "__construct" ["class"]=>"think\App"}
             $constructor = $reflect->getConstructor();
 
             $args = $constructor ? $this->bindParams($constructor, $vars) : [];
@@ -432,21 +435,27 @@ class Container implements \ArrayAccess
     protected function bindParams($reflect, $vars = [])
     {
         # 判断参数个数
-        if ($reflect->getNumberOfParameters() == 0) {
+        var_dump($reflect);
+        if ($reflect->getNumberOfParameters() == 0) { # example：Env类参量数为0
             return [];
         }
-
         // 判断数组类型 数字数组时按顺序绑定参数
         # reset($vars)重置指针到数组第一个元素
         # key($vars)获取指针所指向的元素的键值
         reset($vars); 
-        $type   = key($vars) === 0 ? 1 : 0; # 1为数字类型
+        $type   = key($vars) === 0 ? 1 : 0; # 1为数字类型 0为字符串类型键值
         $params = $reflect->getParameters(); # 获取变量，如App构造函数的变量appPath(ReflectionParameter对象)
+        var_dump($params);
         foreach ($params as $param) {
             $name  = $param->getName(); # output example: appPath(反射类对象)
+            var_dump("NAME==>> ".$name);
             $class = $param->getClass(); # output example: think\App(反射类对象)
-            if ($class) {
+            var_dump("CLASS==>> ".$class);
+            
+            # 构造函数各种类型参数不同处理：
+            if ($class) { # 构造函数传入的变量是一个类的实例
                 # $class->getName(),output example: string(9) "think\App"
+                # 这里得到该类的实例保存到$args
                 $args[] = $this->getObjectParam($class->getName(), $vars);
             } elseif (1 == $type && !empty($vars)) {
                 $args[] = array_shift($vars);
@@ -458,6 +467,7 @@ class Container implements \ArrayAccess
                 throw new InvalidArgumentException('method param miss:' . $name);
             }
         }
+        var_dump("===================");
 
         return $args;
     }
@@ -474,7 +484,6 @@ class Container implements \ArrayAccess
     {
         $array = $vars;
         $value = array_shift($array);
-
         if ($value instanceof $className) {
             $result = $value;
             array_shift($vars);

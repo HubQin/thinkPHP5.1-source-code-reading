@@ -3,9 +3,14 @@ namespace app\index\controller;
 
 class Index
 {
+    public function __construct($value='')
+    {
+        # code...
+    }
     public function index()
     {
-    	return 'test';
+        
+    	return "test";
     }
 
     public function hello($name = 'ThinkPHP5')
