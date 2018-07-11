@@ -266,6 +266,7 @@ class Container implements \ArrayAccess
             $object = $this->invokeClass($abstract, $vars);
         }
 
+        # 将返回的实例对象保存起来作为缓存
         if (!$newInstance) {
             $this->instances[$abstract] = $object;
         }
@@ -395,19 +396,25 @@ class Container implements \ArrayAccess
         try {
             $reflect = new ReflectionClass($class);
 
+            # 存在__make方法时
             if ($reflect->hasMethod('__make')) {
+
+                # 提取该类下__make方法的信息
                 $method = new ReflectionMethod($class, '__make');
 
+                # 如果该方法是公有的且静态的
                 if ($method->isPublic() && $method->isStatic()) {
                     $args = $this->bindParams($method, $vars);
                     return $method->invokeArgs(null, $args);
                 }
             }
 
+            # 获取传入类的构造函数，如：对于think\App,得到：object(ReflectionMethod){["name"]=> "__construct" ["class"]=>"think\App"}
             $constructor = $reflect->getConstructor();
 
             $args = $constructor ? $this->bindParams($constructor, $vars) : [];
 
+            # ReflectionClass::newInstanceArgs — 从给出的参数创建一个新的类实例。
             return $reflect->newInstanceArgs($args);
 
         } catch (ReflectionException $e) {
@@ -424,20 +431,22 @@ class Container implements \ArrayAccess
      */
     protected function bindParams($reflect, $vars = [])
     {
+        # 判断参数个数
         if ($reflect->getNumberOfParameters() == 0) {
             return [];
         }
 
         // 判断数组类型 数字数组时按顺序绑定参数
-        reset($vars);
-        $type   = key($vars) === 0 ? 1 : 0;
-        $params = $reflect->getParameters();
-
+        # reset($vars)重置指针到数组第一个元素
+        # key($vars)获取指针所指向的元素的键值
+        reset($vars); 
+        $type   = key($vars) === 0 ? 1 : 0; # 1为数字类型
+        $params = $reflect->getParameters(); # 获取变量，如App构造函数的变量appPath(ReflectionParameter对象)
         foreach ($params as $param) {
-            $name  = $param->getName();
-            $class = $param->getClass();
-
+            $name  = $param->getName(); # output example: appPath(反射类对象)
+            $class = $param->getClass(); # output example: think\App(反射类对象)
             if ($class) {
+                # $class->getName(),output example: string(9) "think\App"
                 $args[] = $this->getObjectParam($class->getName(), $vars);
             } elseif (1 == $type && !empty($vars)) {
                 $args[] = array_shift($vars);
@@ -460,6 +469,7 @@ class Container implements \ArrayAccess
      * @param  array    $vars       参数
      * @return mixed
      */
+    # 没$vars时，调用make函数，返回类的实例
     protected function getObjectParam($className, &$vars)
     {
         $array = $vars;
@@ -471,7 +481,6 @@ class Container implements \ArrayAccess
         } else {
             $result = $this->make($className);
         }
-
         return $result;
     }
 

@@ -18,6 +18,8 @@ use think\route\Dispatch;
 /**
  * App 应用管理
  */
+
+# App继承了Container类，Container类中使用的后期静态绑定将发挥作用
 class App extends Container
 {
     const VERSION = '5.1.18';
