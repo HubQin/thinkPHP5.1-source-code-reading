@@ -107,8 +107,6 @@ class Container implements \ArrayAccess
      */
     public static function get($abstract, $vars = [], $newInstance = false)
     {   
-        # #var_dump(static::getInstance())在exit前运行了两次？==>(整个流程最后会调用一次Log类)
-        # var_dump(static::getInstance());echo "===I am HERE===";exit;
         return static::getInstance()->make($abstract, $vars, $newInstance);
     }
 
@@ -435,22 +433,20 @@ class Container implements \ArrayAccess
     protected function bindParams($reflect, $vars = [])
     {
         # 判断参数个数
-        var_dump($reflect);
         if ($reflect->getNumberOfParameters() == 0) { # example：Env类参量数为0
             return [];
         }
+
         // 判断数组类型 数字数组时按顺序绑定参数
         # reset($vars)重置指针到数组第一个元素
         # key($vars)获取指针所指向的元素的键值
         reset($vars); 
         $type   = key($vars) === 0 ? 1 : 0; # 1为数字类型 0为字符串类型键值
         $params = $reflect->getParameters(); # 获取变量，如App构造函数的变量appPath(ReflectionParameter对象)
-        var_dump($params);
+
         foreach ($params as $param) {
             $name  = $param->getName(); # output example: appPath(反射类对象)
-            var_dump("NAME==>> ".$name);
             $class = $param->getClass(); # output example: think\App(反射类对象)
-            var_dump("CLASS==>> ".$class);
             
             # 构造函数各种类型参数不同处理：
             if ($class) { # 构造函数传入的变量是一个类的实例
@@ -467,7 +463,6 @@ class Container implements \ArrayAccess
                 throw new InvalidArgumentException('method param miss:' . $name);
             }
         }
-        var_dump("===================");
 
         return $args;
     }
