@@ -181,9 +181,11 @@ class App extends Container
         $this->instance('app', $this);
 
         // 加载惯例配置文件
+        # 这里访问未定义的变量config，将触发Container中的魔术方法__get()函数，而该函数调用make方法，根据变量名创建对应的类。$this->config将得到think\Config类
         $this->config->set(include $this->thinkPath . 'convention.php');
 
         // 设置路径环境变量
+        # 原理同上
         $this->env->set([
             'think_path'   => $this->thinkPath,
             'root_path'    => $this->rootPath,
@@ -200,6 +202,7 @@ class App extends Container
             $this->env->load($this->rootPath . '.env');
         }
 
+        #  应用的命名空间
         $this->namespace = $this->env->get('app_namespace', $this->namespace);
         $this->env->set('app_namespace', $this->namespace);
 

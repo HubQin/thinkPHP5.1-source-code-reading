@@ -153,7 +153,9 @@ class Config implements \ArrayAccess
     public function set($name, $value = null)
     {
         if (is_string($name)) {
+            # 单个设置
             if (!strpos($name, '.')) {
+                # 没有'.'分隔，自动加上前缀'app'
                 $name = $this->prefix . '.' . $name;
             }
 
@@ -169,7 +171,7 @@ class Config implements \ArrayAccess
         } elseif (is_array($name)) {
             // 批量设置
             if (!empty($value)) {
-                if (isset($this->config[$value])) {
+                if (isset($this->config[$value])) {  
                     $result = array_merge($this->config[$value], $name);
                 } else {
                     $result = $name;
