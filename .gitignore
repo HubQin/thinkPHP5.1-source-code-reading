@@ -4,3 +4,4 @@
 *.log
 runtime/*
 .env
+public/web.config

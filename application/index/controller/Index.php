@@ -1,6 +1,9 @@
 <?php
 namespace app\index\controller;
 
+use think\Request;
+use think\Route;
+
 class Index
 {
     public function __construct($value='')
@@ -13,8 +16,9 @@ class Index
     	return "test";
     }
 
-    public function hello($name = 'ThinkPHP5')
+    public function hello($name,$city = 'ThinkPHP5')
     {
-        return 'hello,' . $name;
+        dump(request()->param('name'));
+        return 'hello,' . $name . '-' . $city;
     }
 }

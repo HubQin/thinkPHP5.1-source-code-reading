@@ -201,17 +201,19 @@ class App extends Container
         if (is_file($this->rootPath . '.env')) {
             $this->env->load($this->rootPath . '.env');
         }
-
-        #  应用的命名空间
+        #  应用的命名空间($this->namespace默认为'app')
+        #  this->env->get没有获取到对应的环境变量则返回第二个参数(默认值)
         $this->namespace = $this->env->get('app_namespace', $this->namespace);
         $this->env->set('app_namespace', $this->namespace);
 
         // 注册应用命名空间
+        # 得到["app\"]=>array(1) {[0]=>string(59) "[ROOT_PATH]\thinkPHP5.1-source-code-reading\application"}
         Loader::addNamespace($this->namespace, $this->appPath);
-
+        
         $this->configExt = $this->env->get('config_ext', '.php');
 
         // 初始化应用
+        // # 加载公共函数、助手函数等
         $this->init();
 
         // 开启类名后缀
@@ -222,10 +224,14 @@ class App extends Container
         $this->env->set('app_debug', $this->appDebug);
 
         if (!$this->appDebug) {
+            # 设置php.ini中配置项的值
             ini_set('display_errors', 'Off');
         } elseif (PHP_SAPI != 'cli') {
+            # 命令行模式下
+            # ob_get_level — 返回输出缓冲机制的嵌套级别
             //重新申请一块比较大的buffer
             if (ob_get_level() > 0) {
+                # ob_get_clean — 得到当前缓冲区的内容并删除当前输出缓冲区
                 $output = ob_get_clean();
             }
             ob_start();
