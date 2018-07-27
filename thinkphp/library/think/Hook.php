@@ -82,18 +82,26 @@ class Hook
      */
     public function add($tag, $behavior, $first = false)
     {
+        # A || B 假如A为false,则需判断下一个语句(即执行了下一个语句)
+        # A && B 假如A为false,则整个语句为false,无需再进一步判断;A为true，则需执行下一个语句
+        # 此句含义：不存在$tag这个键值，这初始化它为一个空数组
         isset($this->tags[$tag]) || $this->tags[$tag] = [];
 
         if (is_array($behavior) && !is_callable($behavior)) {
+            #传入的参数$behavior是数组且不是闭包函数时
             if (!array_key_exists('_overlay', $behavior)) {
+                # 没有'_overlay'这个键值时,使用非覆盖模式
                 $this->tags[$tag] = array_merge($this->tags[$tag], $behavior);
             } else {
+                # 覆盖模式：覆盖之前的相同标签下面的行为定义
                 unset($behavior['_overlay']);
                 $this->tags[$tag] = $behavior;
             }
         } elseif ($first) {
+            # 插入单个行为到相应标签的开头
             array_unshift($this->tags[$tag], $behavior);
         } else {
+            # 添加单个行为到相应标签下
             $this->tags[$tag][] = $behavior;
         }
     }
@@ -112,6 +120,7 @@ class Hook
                 $this->add($tag, $behavior);
             }
         } else {
+            # 两个数组相加，如有相同的键值，会保留第一个的
             $this->tags = $tags + $this->tags;
         }
     }
@@ -128,7 +137,7 @@ class Hook
             //获取全部的插件信息
             return $this->tags;
         }
-
+        # 存在则返回相应标签，没有则返回空
         return array_key_exists($tag, $this->tags) ? $this->tags[$tag] : [];
     }
 
@@ -141,10 +150,10 @@ class Hook
      * @return mixed
      */
     public function listen($tag, $params = null, $once = false)
-    {
+    {   
         $results = [];
         $tags    = $this->get($tag);
-
+        var_dump($tags);
         foreach ($tags as $key => $name) {
             $results[$key] = $this->execTag($name, $tag, $params);
 

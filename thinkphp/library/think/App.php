@@ -391,6 +391,7 @@ class App extends Container
 
             // 监听app_init
             $this->hook->listen('app_init');
+            # var_dump($this->hook->get());
 
             if ($this->bindModule) {
                 // 模块/控制器绑定
