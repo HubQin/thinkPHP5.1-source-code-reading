@@ -176,8 +176,10 @@ class App extends Container
         $this->beginTime   = microtime(true);
         $this->beginMem    = memory_get_usage();
 
+        # 保存当前对象实例
         static::setInstance($this);
 
+        # 绑定当前实例到容器
         $this->instance('app', $this);
 
         // 加载惯例配置文件
@@ -285,6 +287,7 @@ class App extends Container
             if (is_file($path . 'tags.php')) {
                 $tags = include $path . 'tags.php';
                 if (is_array($tags)) {
+                    # 放置到钩子行为变量中($tags)
                     $this->hook->import($tags);
                 }
             }
@@ -317,8 +320,10 @@ class App extends Container
 
             // 自动读取配置文件
             if (is_dir($path . 'config')) {
+                # 优先读取模块下的配置文件
                 $dir = $path . 'config';
             } elseif (is_dir($this->configPath . $module)) {
+                # 根目录下的config文件夹对应的模块目录
                 $dir = $this->configPath . $module;
             }
 
@@ -349,7 +354,8 @@ class App extends Container
             Error::setExceptionHandler($config['app']['exception_handle']);
         }
 
-        Db::init($config['database']);
+        # 加载各模块的配置
+        Db::init($config['database']); 
         $this->middleware->setConfig($config['middleware']);
         $this->route->setConfig($config['app']);
         $this->request->init($config['app']);
@@ -361,9 +367,11 @@ class App extends Container
         $this->cache->init($config['cache'], true);
 
         // 加载当前模块语言包
+        # 返回语言包的所有映射
         $this->lang->load($this->appPath . $module . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR . $this->request->langset() . '.php');
 
         // 模块请求缓存检查
+        # 第一个参数为缓存标识，默认为false,request_cache的值可以设置为'__URL__','CONTROLLER__'等
         $this->checkRequestCache(
             $config['app']['request_cache'],
             $config['app']['request_cache_expire'],
@@ -382,16 +390,15 @@ class App extends Container
         try {
             // 初始化应用
             $this->initialize();
-
             // 监听app_init
             $this->hook->listen('app_init');
             # var_dump($this->hook->get());
-
             if ($this->bindModule) {
                 // 模块/控制器绑定
                 $this->route->bind($this->bindModule);
             } elseif ($this->config('app.auto_bind_module')) {
                 // 入口自动绑定
+                # $this->request->baseFile()返回当前执行的文件，如 "/index.php"
                 $name = pathinfo($this->request->baseFile(), PATHINFO_FILENAME);
                 if ($name && 'index' != $name && is_dir($this->appPath . $name)) {
                     $this->route->bind($name);
@@ -405,9 +412,10 @@ class App extends Container
 
             if (empty($dispatch)) {
                 // 路由检测
+                # $this->routeCheck()返回think\dispatch\url的对象实例
+                # 最终返回一个think\route\dispatch\Module对象实例
                 $dispatch = $this->routeCheck()->init();
             }
-
             // 记录当前调度信息
             $this->request->dispatch($dispatch);
 
@@ -436,7 +444,7 @@ class App extends Container
 
         $this->middleware->add(function (Request $request, $next) use ($dispatch, $data) {
             return is_null($data) ? $dispatch->run() : $data;
-        });
+        }) ;
 
         $response = $this->middleware->dispatch($this->request);
 
@@ -452,6 +460,7 @@ class App extends Container
             $closure  = $this->config->get('route_check_cache_key');
             $routeKey = $closure($this->request);
         } else {
+            # 路由缓存的Key自定义设置（闭包），默认为当前URL和请求类型的md5
             $routeKey = md5($this->request->baseUrl(true) . ':' . $this->request->method());
         }
 
@@ -493,6 +502,7 @@ class App extends Container
         if ($cache) {
             list($key, $expire, $tag) = $cache;
             if (strtotime($this->request->server('HTTP_IF_MODIFIED_SINCE')) + $expire > $this->request->server('REQUEST_TIME')) {
+                # 缓存还未过期
                 // 读取缓存
                 $response = Response::create()->code(304);
                 throw new HttpResponseException($response);
@@ -583,9 +593,10 @@ class App extends Container
     {
         // 检测路由缓存
         if (!$this->appDebug && $this->config->get('route_check_cache')) {
+            # 非调试模式下且开启路由缓存
             $routeKey = $this->getRouteCacheKey();
+            # 路由缓存类型及参数
             $option   = $this->config->get('route_cache_option') ?: $this->cache->getConfig();
-
             if ($this->cache->connect($option)->has($routeKey)) {
                 return $this->cache->connect($option)->get($routeKey);
             }
@@ -593,7 +604,6 @@ class App extends Container
 
         // 获取应用调度信息
         $path = $this->request->path();
-
         // 是否强制路由模式
         $must = !is_null($this->routeMust) ? $this->routeMust : $this->route->config('url_route_must');
 

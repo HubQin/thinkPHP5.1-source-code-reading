@@ -130,7 +130,6 @@ class Lang
         if (!empty($lang)) {
             $this->lang[$range] = $lang + $this->lang[$range];
         }
-
         return $this->lang[$range];
     }
 

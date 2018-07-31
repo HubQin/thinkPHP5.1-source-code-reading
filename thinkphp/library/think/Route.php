@@ -229,7 +229,6 @@ class Route
 
         // 注册默认域名
         $domain = new Domain($this, $this->host);
-
         $this->domains[$this->host] = $domain;
 
         // 默认分组
@@ -847,12 +846,17 @@ class Route
      */
     public function check($url, $must = false)
     {
+        # $url为.com后面的字串
         // 自动检测域名路由
-        $domain = $this->checkDomain();
+        $domain = $this->checkDomain(); # 返回一个domain对象
+
+        # 将url中的分隔符替换为 '|'
         $url    = str_replace($this->config['pathinfo_depr'], '|', $url);
 
+        # 路由是否完全匹配
         $completeMatch = $this->config['route_complete_match'];
 
+        # $url的值为'var|xxx'的形式
         $result = $domain->check($this->request, $url, $completeMatch);
 
         if (false === $result && !empty($this->cross)) {
@@ -869,6 +873,7 @@ class Route
         }
 
         // 默认路由解析
+        # UrlDispatch没有构造函数，调用父类的
         return new UrlDispatch($this->request, $this->group, $url, [
             'auto_search' => $this->autoSearchController,
         ]);
@@ -886,7 +891,7 @@ class Route
 
         $item = false;
 
-        if ($subDomain && count($this->domains) > 1) {
+        if ($subDomain && count($this->domains) > 1  ) {
             $domain  = explode('.', $subDomain);
             $domain2 = array_pop($domain);
 
@@ -920,7 +925,6 @@ class Route
             // 检测当前完整域名
             $item = $this->domains[$this->host];
         }
-
         if (is_string($item)) {
             $item = $this->domains[$item];
         }

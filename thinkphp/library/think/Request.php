@@ -1968,39 +1968,44 @@ class Request
             $tag    = $except;
             $except = [];
         }
-
+        # 请求缓存仅对GET请求有效
         if (false === $key || !$this->isGet() || $this->isCheckCache || false === $expire) {
             // 关闭当前缓存
             return;
         }
-
         // 标记请求缓存检查
         $this->isCheckCache = true;
-
         foreach ($except as $rule) {
+            # 如果url中满足排除的规则，则停止缓存
             if (0 === stripos($this->url(), $rule)) {
                 return;
             }
         }
-
         if ($key instanceof \Closure) {
+            # 调用回调函数，并把一个数组参数作为回调函数的参数
             $key = call_user_func_array($key, [$this]);
         } elseif (true === $key) {
             // 自动缓存功能
+            # 配置中设request_cache为true，实际就等于__URL__
             $key = '__URL__';
         } elseif (strpos($key, '|')) {
+            # 分离key和过滤函数
             list($key, $fun) = explode('|', $key);
         }
 
         // 特殊规则替换
         if (false !== strpos($key, '__')) {
+            # $key中含有'__'：
+            # __URL__被转为md5
             $key = str_replace(['__MODULE__', '__CONTROLLER__', '__ACTION__', '__URL__'], [$this->module, $this->controller, $this->action, md5($this->url(true))], $key);
         }
 
         if (false !== strpos($key, ':')) {
+            # $key中含有冒号：
             $param = $this->param();
             foreach ($param as $item => $val) {
                 if (is_string($val) && false !== strpos($key, ':' . $item)) {
+                    # 含有:item,替换成实际的值 
                     $key = str_replace(':' . $item, $val, $key);
                 }
             }
