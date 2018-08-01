@@ -417,6 +417,7 @@ class App extends Container
                 $dispatch = $this->routeCheck()->init();
             }
             // 记录当前调度信息
+            # 将$dispatch保存到Request类的$dispatch成员中
             $this->request->dispatch($dispatch);
 
             // 记录路由和请求信息
@@ -441,7 +442,7 @@ class App extends Container
             $dispatch = null;
             $data     = $exception->getResponse();
         }
-
+        # $dispatch->run()返回一个Response对象
         $this->middleware->add(function (Request $request, $next) use ($dispatch, $data) {
             return is_null($data) ? $dispatch->run() : $data;
         }) ;
