@@ -53,6 +53,7 @@ class Domain extends RuleGroup
         // 检测别名路由
         $result = $this->checkRouteAlias($request, $url);
 
+        # 有别名则返回结果think\route\dispatch\Module对象
         if (false !== $result) {
             return $result;
         }
@@ -101,10 +102,13 @@ class Domain extends RuleGroup
      */
     private function checkRouteAlias($request, $url)
     {
+        # strstr($url, '|', true)返回'|'前面的字符串
         $alias = strpos($url, '|') ? strstr($url, '|', true) : $url;
 
+        # 没有别名返回null, 有则返回AliasRule对象
         $item = $this->router->getAlias($alias);
 
+        # 有别名则调用AliasRule的check()方法
         return $item ? $item->check($request, $url) : false;
     }
 

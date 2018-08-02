@@ -392,7 +392,6 @@ class Response
 
             $this->content = (string) $content;
         }
-
         return $this->content;
     }
 

@@ -119,11 +119,11 @@ return [
     // 是否开启请求缓存 true自动缓存 支持设置请求缓存规则
     'request_cache'          => false,
     // 请求缓存有效期
-    'request_cache_expire'   => null,
+    'request_cache_expire'   => 3600,
     // 全局请求缓存排除规则
-    'request_cache_except'   => [],
+    'request_cache_except'   => ['/index/hello'],
     // 是否开启路由缓存
-    'route_check_cache'      => false,
+    'route_check_cache'      => true,
     // 路由缓存的Key自定义设置（闭包），默认为当前URL和请求类型的md5
     'route_check_cache_key'  => '',
     // 路由缓存类型及参数

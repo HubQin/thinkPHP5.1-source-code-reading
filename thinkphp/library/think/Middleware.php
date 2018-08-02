@@ -59,7 +59,7 @@ class Middleware
      * @param  string $type  中间件类型
      */
     public function add($middleware, $type = 'route')
-    {
+    { 
         if (is_null($middleware)) {
             return;
         }
@@ -118,6 +118,7 @@ class Middleware
      */
     public function dispatch(Request $request, $type = 'route')
     {
+        # $this->resolve($type)返回一个闭包
         return call_user_func($this->resolve($type), $request);
     }
 
@@ -134,6 +135,7 @@ class Middleware
         }
 
         if ($middleware instanceof \Closure) {
+            # 闭包
             return [$middleware, isset($param) ? $param : null];
         }
 
@@ -156,7 +158,7 @@ class Middleware
         if (strpos($middleware, ':')) {
             list($middleware, $param) = explode(':', $middleware, 2);
         }
-
+        # 返回值如：array(2) { [0]=> array(2) { [0]=> object(app\http\middleware\Check)#63 (0) { } [1]=> string(6) "handle" } [1]=> NULL }
         return [[$this->app->make($middleware), 'handle'], isset($param) ? $param : null];
     }
 
@@ -164,14 +166,16 @@ class Middleware
     {
         return function (Request $request) use ($type) {
 
+            # array_shift() 函数删除数组中第一个元素，并返回被删除元素的值。
             $middleware = array_shift($this->queue[$type]);
 
             if (null === $middleware) {
                 throw new InvalidArgumentException('The queue was exhausted, with no response returned');
             }
 
+            # 回调 = '', 参数 = ''
             list($call, $param) = $middleware;
-
+var_dump($param);
             try {
                 $response = call_user_func_array($call, [$request, $this->resolve($type), $param]);
             } catch (HttpResponseException $exception) {

@@ -12,9 +12,9 @@
 Route::get('think', function () {
     return 'hello,ThinkPHP5!';
 });
-// Route::get('hello/:name', 'index/hello');
-Route::resource('blogs','index/Blog');
-Route::resource('blogs.comments','index/Comment');
+
+Route::get('hello/:name', 'index/hello');
+
 return [
 
 ];

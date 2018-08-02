@@ -153,7 +153,6 @@ class Hook
     {   
         $results = [];
         $tags    = $this->get($tag);
-        var_dump($tags);
         foreach ($tags as $key => $name) {
             $results[$key] = $this->execTag($name, $tag, $params);
 
