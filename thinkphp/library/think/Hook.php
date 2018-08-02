@@ -196,26 +196,32 @@ class Hook
      */
     protected function execTag($class, $tag = '', $params = null)
     {
+        # 开启了调试模式，则记录时间和内存使用($this->app['debug']将实例化Debug类)
         $this->app->isDebug() && $this->app['debug']->remark('behavior_start', 'time');
 
+        # 转为驼峰命名
         $method = Loader::parseName($tag, 1, false);
 
         if ($class instanceof \Closure) {
+            # 闭包
             $call  = $class;
             $class = 'Closure';
         } elseif (strpos($class, '::')) {
+            # 静态方法
             $call = $class;
         } else {
+            # 获得对应行为的实例
             $obj = Container::get($class);
 
             if (!is_callable([$obj, $method])) {
+                # 不能调用，使用默认入口函数
                 $method = self::$portal;
             }
 
             $call  = [$class, $method];
             $class = $class . '->' . $method;
         }
-
+        # 执行该行为
         $result = $this->app->invoke($call, [$params]);
 
         if ($this->app->isDebug()) {
